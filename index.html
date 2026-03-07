@@ -4,47 +4,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Benge Fitness</title>
 <style>
-body{font-family:Arial;margin:20px;background:#111;color:#fff}
+body{font-family:Arial;margin:15px;background:#111;color:#fff}
+h1,h2{margin-top:5px}
 button{padding:10px;margin:5px;border-radius:8px;border:none;background:#2e7dff;color:white}
 .card{background:#1c1c1c;padding:15px;border-radius:10px;margin-bottom:15px}
 input{padding:6px;border-radius:6px;border:none;margin:3px;width:70px}
+select{padding:6px;border-radius:6px;margin:5px}
 .timer{font-size:28px;margin-top:10px}
+.exerciseRow{display:flex;align-items:center;margin:4px 0}
+.exerciseRow span{width:140px;display:inline-block}
+.small{font-size:12px;color:#bbb}
+.video{color:#6ab0ff;text-decoration:underline;cursor:pointer}
 </style>
 </head>
 <body>
+
 <h1>Benge Fitness</h1>
+
+<div class="card">
+<h2>Start Workout</h2>
+<select id="category">
+<option>Chest</option>
+<option>Back</option>
+<option>Legs</option>
+<option>Cardio</option>
+</select>
+<button onclick="startWorkout()">Start Workout</button>
+</div>
+
+<div id="workoutArea" style="display:none">
 
 <div class="card">
 <h2>Workout Timer</h2>
 <div id="timer" class="timer">00:00</div>
-<button onclick="startWorkout()">Start Workout</button>
+<p>Calories Burned: <span id="calories">0</span></p>
 <button onclick="endWorkout()">End Workout</button>
-<p>Total Calories: <span id="calories">0</span></p>
 </div>
 
 <div class="card">
-<h2>Bench Press</h2>
-<table>
-<tr><th>Set</th><th>Weight</th><th>Reps</th><th></th></tr>
-<tr>
-<td>1</td>
-<td><input id="w1"></td>
-<td><input id="r1"></td>
-<td><button onclick="finishSet()">Finish</button></td>
-</tr>
-<tr>
-<td>2</td>
-<td><input id="w2"></td>
-<td><input id="r2"></td>
-<td><button onclick="finishSet()">Finish</button></td>
-</tr>
-<tr>
-<td>3</td>
-<td><input id="w3"></td>
-<td><input id="r3"></td>
-<td><button onclick="finishSet()">Finish</button></td>
-</tr>
-</table>
+<h2>Exercises</h2>
+<div id="exerciseList"></div>
+<button onclick="addExercise()">+ Add Exercise</button>
 </div>
 
 <div class="card">
@@ -56,51 +56,197 @@ input{padding:6px;border-radius:6px;border:none;margin:3px;width:70px}
 <button onclick="setRest(180)">180s</button>
 </div>
 
+</div>
+
+<div class="card">
+<h2>Workout History</h2>
+<div id="history"></div>
+</div>
+
 <script>
-let startTime;
-let timerInterval;
-let restDefault=120;
-let weight=230;
-let calories=0;
+let startTime
+let timerInterval
+let restDefault=120
+let calories=0
+let bodyweight=230
+let currentWorkout=[]
+
+const exercisesDB=[
+{n:"Bench Press",img:"",vid:"https://www.youtube.com/watch?v=rT7DgCr-3pg"},
+{n:"Lat Pulldown",img:"",vid:"https://www.youtube.com/watch?v=CAwf7n6Luuc"},
+{n:"Cable Row",img:"",vid:"https://www.youtube.com/watch?v=HJSVR_67OlM"},
+{n:"Back Squat",img:"",vid:"https://www.youtube.com/watch?v=Dy28eq2PjcM"},
+{n:"Deadlift",img:"",vid:"https://www.youtube.com/watch?v=op9kVnSso6Q"},
+{n:"Leg Press",img:"",vid:"https://www.youtube.com/watch?v=IZxyjW7MPJQ"},
+{n:"Treadmill",img:"",vid:"https://www.youtube.com/watch?v=brFHyOtTwH4"}
+]
 
 function startWorkout(){
-startTime=Date.now();
-timerInterval=setInterval(updateTimer,1000);
+let cat=document.getElementById("category").value
+currentWorkout=[]
+calories=0
+
+document.getElementById("calories").innerText=0
+
+startTime=Date.now()
+
+timerInterval=setInterval(updateTimer,1000)
+
+document.getElementById("workoutArea").style.display="block"
+
+loadPreset(cat)
 }
 
 function updateTimer(){
-let diff=Math.floor((Date.now()-startTime)/1000);
-let m=Math.floor(diff/60);
-let s=diff%60;
+let diff=Math.floor((Date.now()-startTime)/1000)
+let m=Math.floor(diff/60)
+let s=diff%60
+
 document.getElementById("timer").innerText=
-(m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+(m<10?"0":"")+m+":"+(s<10?"0":"")+s
 }
 
-function endWorkout(){
-clearInterval(timerInterval);
-alert("Workout complete! Calories burned: "+Math.round(calories));
+function loadPreset(cat){
+let list=[]
+
+if(cat==="Chest") list=["Bench Press"]
+if(cat==="Back") list=["Lat Pulldown","Cable Row"]
+if(cat==="Legs") list=["Back Squat","Leg Press"]
+if(cat==="Cardio") list=["Treadmill"]
+
+list.forEach(e=>createExercise(e))
 }
 
-function finishSet(){
-let setCalories=(6*104*0.01);
-calories+=setCalories;
-document.getElementById("calories").innerText=Math.round(calories);
-startRest();
+function createExercise(name="Exercise"){
+let id=Date.now()+Math.random()
+
+currentWorkout.push({id,name,sets:[]})
+
+let div=document.createElement("div")
+
+div.className="exerciseRow"
+
+div.id="ex"+id
+
+let video=""
+let found=exercisesDB.find(x=>x.n===name)
+
+if(found) video=found.vid
+
+
+div.innerHTML=`
+<span>${name}</span>
+<input placeholder="wt" id="w${id}">
+<input placeholder="reps" id="r${id}">
+<button onclick="finishSet('${id}')">Set Done</button>
+<span class='video' onclick="openVideo('${video}')">video</span>
+`
+
+
+document.getElementById("exerciseList").appendChild(div)
+}
+
+function addExercise(){
+let name=prompt("Exercise name")
+if(name) createExercise(name)
+}
+
+function openVideo(url){
+if(url) window.open(url)
+}
+
+function finishSet(id){
+let w=document.getElementById("w"+id).value
+let r=document.getElementById("r"+id).value
+
+if(!w||!r) return
+
+let exercise=currentWorkout.find(x=>"ex"+x.id!==undefined)
+
+let setCalories=(6*(bodyweight*0.4536)*0.008)
+
+calories+=setCalories
+
+
+document.getElementById("calories").innerText=Math.round(calories)
+
+startRest()
 }
 
 function startRest(){
-let time=restDefault;
+let time=restDefault
+let el=document.getElementById("rest")
+
 let restInt=setInterval(()=>{
-time--;
-document.getElementById("rest").innerText=time;
-if(time<=0) clearInterval(restInt);
-},1000);
+
+ time--
+ el.innerText=time
+
+ if(time<=0){
+ clearInterval(restInt)
+ el.innerText=restDefault
+ }
+
+},1000)
 }
 
 function setRest(sec){
-restDefault=sec;
-document.getElementById("rest").innerText=sec;
+restDefault=sec
+
+document.getElementById("rest").innerText=sec
 }
+
+function endWorkout(){
+clearInterval(timerInterval)
+
+let duration=document.getElementById("timer").innerText
+
+let log={
+ date:new Date().toLocaleDateString(),
+ duration,
+ calories:Math.round(calories),
+ exercises:currentWorkout
+}
+
+let history=JSON.parse(localStorage.getItem("bengeWorkouts")||"[]")
+
+history.push(log)
+
+localStorage.setItem("bengeWorkouts",JSON.stringify(history))
+
+loadHistory()
+
+alert("Workout saved!")
+}
+
+function loadHistory(){
+let history=JSON.parse(localStorage.getItem("bengeWorkouts")||"[]")
+
+let div=document.getElementById("history")
+
+div.innerHTML=""
+
+history.slice().reverse().forEach(w=>{
+
+let el=document.createElement("div")
+
+el.className="small"
+
+el.innerHTML=`
+<b>${w.date}</b><br>
+Duration: ${w.duration}<br>
+Calories: ${w.calories}
+<hr>
+`
+
+
+div.appendChild(el)
+
+})
+}
+
+loadHistory()
+
 </script>
 
 </body>
