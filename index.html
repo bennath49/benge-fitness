@@ -594,26 +594,66 @@ function moveExercise(idx, dir) {
 }
 
 function showReplaceOptions(idx) {
-  const name = currentExercises[idx].name.toLowerCase();
-  let muscle = 'chest';
-  if (name.includes('row') || name.includes('pull') || name.includes('lat') || name.includes('back')) muscle = 'back';
-  if (name.includes('squat') || name.includes('leg') || name.includes('lunge') || name.includes('deadlift')) muscle = 'legs';
-  if (name.includes('curl') || name.includes('tricep') || name.includes('pushdown')) muscle = 'arms';
-  if (name.includes('press') || name.includes('raise') || name.includes('shrug')) muscle = 'shoulders';
+  const currentEx = currentExercises[idx];
+  
+  // Create Modal Overlay (Dark background)
+  const overlay = document.createElement('div');
+  overlay.id = "replaceModal";
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem;';
+  
+  // Create Modal Box
+  const modal = document.createElement('div');
+  modal.style.cssText = 'background:#1a1a1a; width:100%; max-width:500px; max-height:80vh; border-radius:15px; padding:1.5rem; display:flex; flex-direction:column; border:2px solid #0066ff; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5);';
+  
+  modal.innerHTML = `
+    <h3 style="margin-bottom:1rem; font-size:1.2rem;">Replace "${currentEx.name}"</h3>
+    <input type="text" id="exerciseSearch" placeholder="Search 200+ exercises..." style="margin-bottom:1rem; padding:0.8rem; background:#222; color:white; border:1px solid #444; border-radius:8px; width: 100%;">
+    <div id="replacementList" style="overflow-y:auto; flex:1; border-top:1px solid #333; padding-top:0.5rem;">
+      </div>
+    <button onclick="document.getElementById('replaceModal').remove()" style="margin-top:1rem; background:#444; color:white; padding:0.8rem; border-radius:8px; border:none; cursor:pointer; font-weight:600;">Cancel</button>
+  `;
 
-  const alts = MUSCLE_ALTERNATIVES[muscle] || [];
-  if (!alts.length) return alert("No replacements found");
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
 
-  let html = `<h4>Replace ${currentExercises[idx].name} with:</h4><ul style="list-style:none;padding:0;">`;
-  alts.slice(0,10).forEach(opt => {
-    html += `<li style="margin:0.5rem 0;"><button onclick="replaceExercise(${idx},'${opt}');this.closest('div').remove()">${opt}</button></li>`;
-  });
-  html += '</ul><button onclick="this.parentElement.remove()" style="margin-top:1rem;">Close</button>';
+  const searchInput = modal.querySelector('#exerciseSearch');
+  const listContainer = modal.querySelector('#replacementList');
 
-  const popup = document.createElement('div');
-  popup.style.cssText = 'position:fixed;top:20%;left:50%;transform:translateX(-50%);background:var(--card);padding:1.5rem;border-radius:12px;border:2px solid var(--accent);max-width:420px;z-index:1000;';
-  popup.innerHTML = html;
-  document.body.appendChild(popup);
+  // Function to filter and show exercises
+  const renderList = (filter = "") => {
+    listContainer.innerHTML = '';
+    // This pulls from the EXERCISES object at the top of your script
+    const allOptions = Object.values(EXERCISES).flat();
+    
+    const filtered = allOptions.filter(ex => 
+      ex.name.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    filtered.forEach(ex => {
+      const btn = document.createElement('button');
+      btn.style.cssText = 'width:100%; text-align:left; background:none; border-bottom:1px solid #282828; padding:1rem; color:white; border-radius:0; border-top:none; border-left:none; border-right:none; cursor:pointer; transition: 0.2s;';
+      btn.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:500;">${ex.name}</span>
+          <span style="font-size:0.7rem; color:#0066ff; text-transform:uppercase; border:1px solid #0066ff; padding:2px 6px; border-radius:4px;">${ex.muscle}</span>
+        </div>
+      `;
+      
+      btn.onmouseover = () => btn.style.background = '#222';
+      btn.onmouseout = () => btn.style.background = 'none';
+      
+      btn.onclick = () => {
+        replaceExercise(idx, ex.name);
+        overlay.remove();
+      };
+      listContainer.appendChild(btn);
+    });
+  };
+
+  // Initial show and setup search focus
+  renderList();
+  searchInput.focus();
+  searchInput.oninput = (e) => renderList(e.target.value);
 }
 
 function replaceExercise(idx, newName) {
