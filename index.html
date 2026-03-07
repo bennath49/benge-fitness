@@ -4,51 +4,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Benge Fitness</title>
 <style>
-body{font-family:Arial;margin:15px;background:#111;color:#fff}
-h1,h2{margin-top:5px}
-button{padding:10px;margin:5px;border-radius:8px;border:none;background:#2e7dff;color:white}
-.card{background:#1c1c1c;padding:15px;border-radius:10px;margin-bottom:15px}
-input{padding:6px;border-radius:6px;border:none;margin:3px;width:70px}
-select{padding:6px;border-radius:6px;margin:5px}
-.timer{font-size:28px;margin-top:10px}
-.exerciseRow{display:flex;align-items:center;margin:4px 0}
-.exerciseRow span{width:140px;display:inline-block}
-.small{font-size:12px;color:#bbb}
-.video{color:#6ab0ff;text-decoration:underline;cursor:pointer}
+body{font-family:Arial;margin:0;background:#0f0f0f;color:#fff}
+header{background:#1c1c1c;padding:15px;font-size:22px;font-weight:bold;text-align:center}
+.container{padding:15px}
+.card{background:#1b1b1b;padding:15px;border-radius:12px;margin-bottom:15px}
+button{padding:10px 14px;margin:4px;border-radius:8px;border:none;background:#2e7dff;color:#fff;font-weight:bold}
+select,input{padding:6px;border-radius:6px;border:none;margin:4px}
+.timer{font-size:28px;margin:8px 0}
+.exercise{border-top:1px solid #333;padding-top:8px;margin-top:8px}
+.setRow{display:flex;gap:6px;margin:4px 0}
+.historyItem{font-size:13px;border-bottom:1px solid #333;padding:8px 0}
+.video{color:#6ab0ff;text-decoration:underline;cursor:pointer;font-size:13px}
+img{max-width:100%;border-radius:8px;margin-top:6px}
+.tabs{display:flex;gap:10px;margin-bottom:10px}
+.tab{flex:1}
+.hidden{display:none}
 </style>
 </head>
 <body>
 
-<h1>Benge Fitness</h1>
+<header>Benge Fitness</header>
+
+<div class="container">
+
+<div class="tabs">
+<button class="tab" onclick="showTab('workout')">Workout</button>
+<button class="tab" onclick="showTab('history')">History</button>
+</div>
+
+<div id="workoutTab">
 
 <div class="card">
-<h2>Start Workout</h2>
+<h3>Start Workout</h3>
 <select id="category">
 <option>Chest</option>
 <option>Back</option>
 <option>Legs</option>
 <option>Cardio</option>
 </select>
-<button onclick="startWorkout()">Start Workout</button>
+<button onclick="startWorkout()">Start</button>
 </div>
 
-<div id="workoutArea" style="display:none">
+<div id="activeWorkout" class="hidden">
 
 <div class="card">
-<h2>Workout Timer</h2>
-<div id="timer" class="timer">00:00</div>
-<p>Calories Burned: <span id="calories">0</span></p>
-<button onclick="endWorkout()">End Workout</button>
+<div class="timer" id="timer">00:00</div>
+Calories Burned: <span id="calories">0</span>
+<br><button onclick="endWorkout()">Finish Workout</button>
 </div>
 
 <div class="card">
-<h2>Exercises</h2>
+<h3>Exercises</h3>
 <div id="exerciseList"></div>
-<button onclick="addExercise()">+ Add Exercise</button>
+<button onclick="addExercise()">Add Exercise</button>
 </div>
 
 <div class="card">
-<h2>Rest Timer</h2>
+<h3>Rest Timer</h3>
 <div id="rest">120</div>
 <button onclick="setRest(60)">60s</button>
 <button onclick="setRest(90)">90s</button>
@@ -58,9 +70,15 @@ select{padding:6px;border-radius:6px;margin:5px}
 
 </div>
 
+</div>
+
+<div id="historyTab" class="hidden">
 <div class="card">
-<h2>Workout History</h2>
+<h3>Workout History</h3>
 <div id="history"></div>
+</div>
+</div>
+
 </div>
 
 <script>
@@ -69,32 +87,45 @@ let timerInterval
 let restDefault=120
 let calories=0
 let bodyweight=230
-let currentWorkout=[]
+let workout=[]
 
-const exercisesDB=[
-{n:"Bench Press",img:"",vid:"https://www.youtube.com/watch?v=rT7DgCr-3pg"},
-{n:"Lat Pulldown",img:"",vid:"https://www.youtube.com/watch?v=CAwf7n6Luuc"},
-{n:"Cable Row",img:"",vid:"https://www.youtube.com/watch?v=HJSVR_67OlM"},
-{n:"Back Squat",img:"",vid:"https://www.youtube.com/watch?v=Dy28eq2PjcM"},
-{n:"Deadlift",img:"",vid:"https://www.youtube.com/watch?v=op9kVnSso6Q"},
-{n:"Leg Press",img:"",vid:"https://www.youtube.com/watch?v=IZxyjW7MPJQ"},
-{n:"Treadmill",img:"",vid:"https://www.youtube.com/watch?v=brFHyOtTwH4"}
+const exerciseDB=[
+{name:"Bench Press",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=rT7DgCr-3pg"},
+{name:"Incline Bench",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=DbFgADa2PL8"},
+{name:"Lat Pulldown",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=CAwf7n6Luuc"},
+{name:"Cable Row",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=HJSVR_67OlM"},
+{name:"Back Squat",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=Dy28eq2PjcM"},
+{name:"Deadlift",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=op9kVnSso6Q"},
+{name:"Leg Press",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=IZxyjW7MPJQ"},
+{name:"Treadmill",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=brFHyOtTwH4"}
 ]
 
-function startWorkout(){
-let cat=document.getElementById("category").value
-currentWorkout=[]
-calories=0
+function showTab(tab){
 
-document.getElementById("calories").innerText=0
+document.getElementById("workoutTab").classList.add("hidden")
+
+document.getElementById("historyTab").classList.add("hidden")
+
+if(tab==="workout") document.getElementById("workoutTab").classList.remove("hidden")
+if(tab==="history") document.getElementById("historyTab").classList.remove("hidden")
+
+}
+
+function startWorkout(){
+
+calories=0
+workout=[]
 
 startTime=Date.now()
 
 timerInterval=setInterval(updateTimer,1000)
 
-document.getElementById("workoutArea").style.display="block"
+document.getElementById("activeWorkout").classList.remove("hidden")
 
-loadPreset(cat)
+document.getElementById("exerciseList").innerHTML=""
+
+loadPreset()
+
 }
 
 function updateTimer(){
@@ -102,147 +133,171 @@ let diff=Math.floor((Date.now()-startTime)/1000)
 let m=Math.floor(diff/60)
 let s=diff%60
 
-document.getElementById("timer").innerText=
-(m<10?"0":"")+m+":"+(s<10?"0":"")+s
+document.getElementById("timer").innerText=(m<10?"0":"")+m+":"+(s<10?"0":"")+s
 }
 
-function loadPreset(cat){
+function loadPreset(){
+
+let cat=document.getElementById("category").value
+
 let list=[]
 
-if(cat==="Chest") list=["Bench Press"]
+if(cat==="Chest") list=["Bench Press","Incline Bench"]
 if(cat==="Back") list=["Lat Pulldown","Cable Row"]
 if(cat==="Legs") list=["Back Squat","Leg Press"]
 if(cat==="Cardio") list=["Treadmill"]
 
 list.forEach(e=>createExercise(e))
+
 }
 
-function createExercise(name="Exercise"){
-let id=Date.now()+Math.random()
+function createExercise(name){
 
-currentWorkout.push({id,name,sets:[]})
+let data=exerciseDB.find(x=>x.name===name)||{name:name,img:"",vid:""}
+
+let id="ex"+Date.now()+Math.random()
+
+workout.push({name:data.name,sets:[]})
 
 let div=document.createElement("div")
 
-div.className="exerciseRow"
+div.className="exercise"
 
-div.id="ex"+id
-
-let video=""
-let found=exercisesDB.find(x=>x.n===name)
-
-if(found) video=found.vid
+div.id=id
 
 
 div.innerHTML=`
-<span>${name}</span>
-<input placeholder="wt" id="w${id}">
-<input placeholder="reps" id="r${id}">
-<button onclick="finishSet('${id}')">Set Done</button>
-<span class='video' onclick="openVideo('${video}')">video</span>
+<b>${data.name}</b><br>
+${data.img?`<img src="${data.img}">`:``}
+<span class='video' onclick="openVideo('${data.vid}')">watch demo</span>
+
+<div class='setRow'>
+<input placeholder='weight' id='w${id}'>
+<input placeholder='reps' id='r${id}'>
+<button onclick="finishSet('${id}')">log set</button>
+</div>
+
+<div id='sets${id}'></div>
 `
 
 
 document.getElementById("exerciseList").appendChild(div)
+
 }
 
 function addExercise(){
-let name=prompt("Exercise name")
-if(name) createExercise(name)
-}
 
-function openVideo(url){
-if(url) window.open(url)
+let name=prompt("Exercise name")
+
+if(name) createExercise(name)
+
 }
 
 function finishSet(id){
+
 let w=document.getElementById("w"+id).value
 let r=document.getElementById("r"+id).value
 
 if(!w||!r) return
 
-let exercise=currentWorkout.find(x=>"ex"+x.id!==undefined)
+let log=document.createElement("div")
+
+log.innerText=w+" lb x "+r
+
+
+document.getElementById("sets"+id).appendChild(log)
 
 let setCalories=(6*(bodyweight*0.4536)*0.008)
 
 calories+=setCalories
 
-
 document.getElementById("calories").innerText=Math.round(calories)
 
 startRest()
+
 }
 
 function startRest(){
+
 let time=restDefault
+
 let el=document.getElementById("rest")
 
 let restInt=setInterval(()=>{
 
- time--
- el.innerText=time
+time--
 
- if(time<=0){
- clearInterval(restInt)
- el.innerText=restDefault
- }
+el.innerText=time
+
+if(time<=0){clearInterval(restInt);el.innerText=restDefault}
 
 },1000)
+
 }
 
 function setRest(sec){
+
 restDefault=sec
 
 document.getElementById("rest").innerText=sec
+
 }
 
 function endWorkout(){
+
 clearInterval(timerInterval)
 
 let duration=document.getElementById("timer").innerText
 
-let log={
- date:new Date().toLocaleDateString(),
- duration,
- calories:Math.round(calories),
- exercises:currentWorkout
+let entry={
+
+date:new Date().toLocaleDateString(),
+
+duration:duration,
+
+calories:Math.round(calories)
+
 }
 
-let history=JSON.parse(localStorage.getItem("bengeWorkouts")||"[]")
+let history=JSON.parse(localStorage.getItem("bengeHistory")||"[]")
 
-history.push(log)
+history.push(entry)
 
-localStorage.setItem("bengeWorkouts",JSON.stringify(history))
+localStorage.setItem("bengeHistory",JSON.stringify(history))
 
 loadHistory()
 
-alert("Workout saved!")
+alert("Workout saved")
+
 }
 
 function loadHistory(){
-let history=JSON.parse(localStorage.getItem("bengeWorkouts")||"[]")
+
+let history=JSON.parse(localStorage.getItem("bengeHistory")||"[]")
 
 let div=document.getElementById("history")
 
 div.innerHTML=""
 
-history.slice().reverse().forEach(w=>{
+history.slice().reverse().forEach(h=>{
 
 let el=document.createElement("div")
 
-el.className="small"
+el.className="historyItem"
 
-el.innerHTML=`
-<b>${w.date}</b><br>
-Duration: ${w.duration}<br>
-Calories: ${w.calories}
-<hr>
-`
+el.innerHTML=`<b>${h.date}</b><br>Duration: ${h.duration}<br>Calories: ${h.calories}`
 
 
 div.appendChild(el)
 
 })
+
+}
+
+function openVideo(url){
+
+if(url) window.open(url)
+
 }
 
 loadHistory()
