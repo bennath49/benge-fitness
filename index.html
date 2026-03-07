@@ -1,194 +1,369 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Benge Fitness Pro</title>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-<style>
-body{margin:0;font-family:'Roboto',sans-serif;background:#0d0d0d;color:#fff;}
-header{background:#1a1a1a;padding:18px;font-size:24px;font-weight:700;text-align:center;letter-spacing:1px;}
-.container{padding:12px}
-.tabs{display:flex;margin-bottom:12px;gap:6px}
-.tab{flex:1;padding:10px;background:#222;border-radius:8px;text-align:center;font-weight:700;cursor:pointer}
-.tab.active{background:#2e7dff;color:#fff}
-.card{background:#1c1c1c;padding:14px;border-radius:12px;margin-bottom:14px}
-.exercise-card{background:#262626;padding:12px;border-radius:12px;margin-bottom:12px}
-.exercise-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.set-row{display:flex;gap:6px;margin-bottom:6px}
-.set-row input{flex:1;padding:6px;border-radius:6px;border:none}
-.set-row button{padding:6px 10px;border-radius:6px;border:none;background:#2e7dff;color:#fff;font-weight:700}
-.video{color:#6ab0ff;text-decoration:underline;cursor:pointer;font-size:13px}
-img.exercise-img{width:100%;border-radius:8px;margin-top:6px}
-.timer{font-size:28px;margin:8px 0;text-align:center}
-.history-item{font-size:13px;border-bottom:1px solid #333;padding:8px 0}
-.add-exercise-btn{padding:10px;border:none;border-radius:8px;background:#2e7dff;color:#fff;font-weight:700;margin-top:6px;width:100%;cursor:pointer}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Benge Fitness Pro • 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --card: #121212;
+      --accent: #0066ff;
+      --accent-dark: #004ccc;
+      --text: #e0e0e0;
+      --text-light: #a0a0a0;
+      --danger: #ff4444;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+    header {
+      background: linear-gradient(to bottom, #1a1a1a, #0f0f0f);
+      padding: 1.1rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      border-bottom: 1px solid #222;
+      letter-spacing: 0.5px;
+    }
+    .container { padding: 1rem; max-width: 640px; margin: 0 auto; }
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+      margin: 1.2rem 0;
+    }
+    .tab {
+      padding: 0.9rem;
+      background: #1e1e1e;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .tab.active {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,102,255,0.3);
+    }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin-bottom: 1.2rem;
+      border: 1px solid #222;
+    }
+    h3 { margin-bottom: 0.8rem; font-size: 1.25rem; }
+    select, input, button {
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+    }
+    select, input { background: #1e1e1e; color: white; width: 100%; margin: 0.4rem 0; }
+    button {
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover { background: var(--accent-dark); }
+    .add-btn {
+      background: #28a745;
+      margin: 1rem 0;
+      font-size: 1.05rem;
+    }
+    .exercise-card {
+      background: #181818;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid #282828;
+    }
+    .exercise-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+    }
+    .video-link {
+      color: #4da6ff;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .set-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 0.5rem;
+      margin: 0.6rem 0;
+    }
+    .set-row input { text-align: center; }
+    .sets-log { font-size: 0.95rem; color: #bbb; margin-top: 0.4rem; }
+    .timer { font-size: 2.8rem; font-weight: 700; text-align: center; margin: 0.8rem 0; }
+    .rest-box { text-align: center; }
+    .rest-box div { font-size: 2.2rem; margin: 0.6rem 0; }
+    .history-item {
+      padding: 0.9rem 0;
+      border-bottom: 1px solid #222;
+      font-size: 0.95rem;
+    }
+    .hidden { display: none; }
+    .danger-btn { background: var(--danger); }
+  </style>
 </head>
 <body>
+
 <header>Benge Fitness Pro</header>
+
 <div class="container">
-<div class="tabs">
-<div class="tab active" id="tabWorkout" onclick="switchTab('workout')">Workout</div>
-<div class="tab" id="tabHistory" onclick="switchTab('history')">History</div>
+
+  <div class="tabs">
+    <div class="tab active" id="tabWorkout" onclick="switchTab('workout')">Workout</div>
+    <div class="tab" id="tabHistory" onclick="switchTab('history')">History</div>
+  </div>
+
+  <div id="workoutTab">
+
+    <div class="card" id="newWorkoutCard">
+      <h3>New Workout</h3>
+      <select id="category">
+        <option value="Chest">Chest</option>
+        <option value="Back">Back</option>
+        <option value="Legs">Legs</option>
+        <option value="Cardio">Cardio</option>
+        <option value="Custom">Custom / Other</option>
+      </select>
+      <button class="add-btn" onclick="startWorkout()">Start Workout</button>
+    </div>
+
+    <div id="activeWorkout" class="hidden">
+      <div class="card">
+        <div class="timer" id="timer">00:00</div>
+        <div style="text-align:center; margin:0.5rem 0;">
+          Calories (est): <b><span id="calories">0</span></b> kcal
+        </div>
+        <button onclick="endWorkout()">Finish & Save</button>
+      </div>
+
+      <div id="exerciseList"></div>
+
+      <button class="add-btn" onclick="addCustomExercise()">+ Add Exercise</button>
+
+      <div class="card rest-box">
+        <h3>Rest Timer</h3>
+        <div id="rest">120</div>
+        <div style="margin-top:0.8rem;">
+          <button onclick="startRest(60)">60s</button>
+          <button onclick="startRest(90)">90s</button>
+          <button onclick="startRest(120)">120s</button>
+          <button onclick="startRest(180)">180s</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="historyTab" class="hidden">
+    <div class="card">
+      <h3>Workout History</h3>
+      <div id="history"></div>
+    </div>
+  </div>
+
 </div>
 
-<div id="workoutTab">
-<div class="card">
-<h3>New Workout</h3>
-<select id="category">
-<option>Chest</option>
-<option>Back</option>
-<option>Legs</option>
-<option>Cardio</option>
-</select>
-<button class="add-exercise-btn" onclick="startWorkout()">Start Workout</button>
-</div>
-
-<div id="activeWorkout" class="hidden">
-<div class="card">
-<div class="timer" id="timer">00:00</div>
-<div style="text-align:center;margin:6px 0">Calories Burned: <span id="calories">0</span></div>
-<button class="add-exercise-btn" onclick="endWorkout()">Finish Workout</button>
-</div>
-
-<div id="exerciseList"></div>
-<button class="add-exercise-btn" onclick="addExercise()">Add Exercise</button>
-
-<div class="card">
-<h3>Rest Timer</h3>
-<div id="rest">120</div>
-<button onclick="setRest(60)">60s</button>
-<button onclick="setRest(90)">90s</button>
-<button onclick="setRest(120)">120s</button>
-<button onclick="setRest(180)">180s</button>
-</div>
-</div>
-</div>
-
-<div id="historyTab" class="hidden">
-<div class="card">
-<h3>Workout History</h3>
-<div id="history"></div>
-</div>
-</div>
-</div>
 <script>
-let startTime, timerInterval, restDefault=120, calories=0, bodyweight=230, workout=[];
-
-const exerciseDB=[
-{name:"Bench Press",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=rT7DgCr-3pg"},
-{name:"Incline Bench",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=DbFgADa2PL8"},
-{name:"Lat Pulldown",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=CAwf7n6Luuc"},
-{name:"Cable Row",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=HJSVR_67OlM"},
-{name:"Back Squat",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=Dy28eq2PjcM"},
-{name:"Deadlift",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=op9kVnSso6Q"},
-{name:"Leg Press",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=IZxyjW7MPJQ"},
-{name:"Treadmill",img:"https://i.imgur.com/X3QK5.jpg",vid:"https://www.youtube.com/watch?v=brFHyOtTwH4"}
+// ────────────────────────────────────────────────
+const exerciseDB = [
+  { name: "Barbell Bench Press", category:"Chest", demo:"https://www.youtube.com/watch?v=ysUTNll8JQ8", img:"https://i.imgur.com/8fXfwG4.jpg" },
+  { name: "Incline Barbell Bench Press", category:"Chest", demo:"https://www.youtube.com/watch?v=SrqOu55lrYU", img:"https://i.imgur.com/X3QK5.jpg" },
+  { name: "Lat Pulldown (Wide Grip)", category:"Back", demo:"https://www.youtube.com/watch?v=CAwf7n6Luuc", img:"https://i.imgur.com/X3QK5.jpg" },
+  { name: "Seated Cable Row", category:"Back", demo:"https://www.youtube.com/watch?v=HJSVR_67OlM", img:"https://i.imgur.com/X3QK5.jpg" },
+  { name: "Back Squat", category:"Legs", demo:"https://www.youtube.com/watch?v=Dy28eq2PjcM", img:"https://i.imgur.com/X3QK5.jpg" },
+  { name: "Conventional Deadlift", category:"Legs", demo:"https://www.youtube.com/watch?v=op9kVnSso6Q", img:"https://i.imgur.com/X3QK5.jpg" },
+  { name: "Seated Leg Press", category:"Legs", demo:"https://www.youtube.com/watch?v=IZxyjW7MPJQ", img:"https://i.imgur.com/X3QK5.jpg" },
+  { name: "Treadmill Run", category:"Cardio", demo:"https://www.youtube.com/watch?v=brFHyOtTwH4", img:"https://i.imgur.com/X3QK5.jpg" },
+  // You can keep adding more high-quality links here
 ];
 
-function switchTab(tab){
- document.getElementById('workoutTab').classList.add('hidden');
- document.getElementById('historyTab').classList.add('hidden');
- document.getElementById('tabWorkout').classList.remove('active');
- document.getElementById('tabHistory').classList.remove('active');
- if(tab==='workout'){ document.getElementById('workoutTab').classList.remove('hidden'); document.getElementById('tabWorkout').classList.add('active');}
- if(tab==='history'){ document.getElementById('historyTab').classList.remove('hidden'); document.getElementById('tabHistory').classList.add('active');}
+let startTime, timerInterval, restInterval;
+let calories = 0;
+let bodyweightLb = 200;           // ← change to your weight
+let currentWorkout = [];
+let editingWorkoutId = null;
+
+// ────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tabWorkout').classList.toggle('active', tab==='workout');
+  document.getElementById('tabHistory').classList.toggle('active', tab==='history');
+
+  document.getElementById('workoutTab').classList.toggle('hidden', tab!=='workout');
+  document.getElementById('historyTab').classList.toggle('hidden', tab!=='history');
 }
 
-function startWorkout(){
- calories=0; workout=[];
- startTime=Date.now();
- timerInterval=setInterval(updateTimer,1000);
- document.getElementById('activeWorkout').classList.remove('hidden');
- document.getElementById('exerciseList').innerHTML='';
- loadPreset();
+// ────────────────────────────────────────────────
+function startWorkout(resume=false) {
+  if (!resume) {
+    calories = 0;
+    currentWorkout = [];
+    startTime = Date.now();
+    document.getElementById('newWorkoutCard').style.display = 'none';
+  }
+
+  clearInterval(timerInterval);
+  timerInterval = setInterval(updateTimer, 1000);
+  document.getElementById('activeWorkout').classList.remove('hidden');
+
+  if (!resume) loadPresetExercises();
+  renderExercises();
+  updateCalories();
 }
 
-function updateTimer(){
- let diff=Math.floor((Date.now()-startTime)/1000);
- let m=Math.floor(diff/60), s=diff%60;
- document.getElementById('timer').innerText=(m<10?'0':'')+m+':' + (s<10?'0':'')+s;
+function updateTimer() {
+  const diff = Math.floor((Date.now() - startTime)/1000);
+  const m = Math.floor(diff/60).toString().padStart(2,'0');
+  const s = (diff%60).toString().padStart(2,'0');
+  document.getElementById('timer').textContent = `${m}:${s}`;
 }
 
-function loadPreset(){
- let cat=document.getElementById('category').value;
- let list=[];
- if(cat==='Chest') list=['Bench Press','Incline Bench'];
- if(cat==='Back') list=['Lat Pulldown','Cable Row'];
- if(cat==='Legs') list=['Back Squat','Leg Press'];
- if(cat==='Cardio') list=['Treadmill'];
- list.forEach(e=>createExercise(e));
+// ────────────────────────────────────────────────
+function loadPresetExercises() {
+  const cat = document.getElementById('category').value;
+  let presets = [];
+  if (cat==='Chest') presets = ["Barbell Bench Press","Incline Barbell Bench Press"];
+  if (cat==='Back')  presets = ["Lat Pulldown (Wide Grip)","Seated Cable Row"];
+  if (cat==='Legs')  presets = ["Back Squat","Seated Leg Press"];
+  if (cat==='Cardio') presets = ["Treadmill Run"];
+
+  presets.forEach(name => addExerciseToWorkout(name, true));
 }
 
-function createExercise(name){
- let data=exerciseDB.find(x=>x.name===name)||{name:name,img:'',vid:''};
- let id='ex'+Date.now()+Math.random();
- workout.push({name:data.name,sets:[]});
- let div=document.createElement('div');
- div.className='exercise-card';
- div.id=id;
- div.innerHTML=`
- <div class='exercise-header'><b>${data.name}</b><span class='video' onclick="openVideo('${data.vid}')">Watch Demo</span></div>
- ${data.img?`<img class='exercise-img' src='${data.img}'>`:``}
- <div class='set-row'><input placeholder='Weight' id='w${id}'><input placeholder='Reps' id='r${id}'><button onclick="finishSet('${id}')">Log Set</button></div>
- <div id='sets${id}'></div>
- `;
- document.getElementById('exerciseList').appendChild(div);
+function addCustomExercise() {
+  const name = prompt("Exercise name (e.g. Dumbbell Shoulder Press)");
+  if (!name) return;
+  addExerciseToWorkout(name);
 }
 
-function addExercise(){
- let name=prompt('Exercise Name');
- if(name) createExercise(name);
+function addExerciseToWorkout(name, isPreset=false) {
+  const ex = exerciseDB.find(e=>e.name===name) || {name, demo:'', img:''};
+  const entry = {
+    id: 'ex_'+Date.now()+Math.random().toString(36).slice(2,8),
+    name: ex.name,
+    demo: ex.demo,
+    img: ex.img,
+    sets: []
+  };
+  currentWorkout.push(entry);
+  renderExercises();
 }
 
-function finishSet(id){
- let w=document.getElementById('w'+id).value, r=document.getElementById('r'+id).value;
- if(!w||!r) return;
- let log=document.createElement('div');
- log.innerText=w+' lb x '+r;
- document.getElementById('sets'+id).appendChild(log);
- let setCalories=(6*(bodyweight*0.4536)*0.008);
- calories+=setCalories;
- document.getElementById('calories').innerText=Math.round(calories);
- startRest();
+// ────────────────────────────────────────────────
+function renderExercises() {
+  const container = document.getElementById('exerciseList');
+  container.innerHTML = '';
+
+  currentWorkout.forEach(ex => {
+    const card = document.createElement('div');
+    card.className = 'exercise-card';
+    card.id = ex.id;
+
+    let html = `
+      <div class="exercise-header">
+        <strong>${ex.name}</strong>
+        ${ex.demo ? `<span class="video-link" onclick="openVideo('${ex.demo}')">Watch Demo</span>` : ''}
+      </div>`;
+
+    if (ex.img) html += `<img src="${ex.img}" style="width:100%;border-radius:8px;margin:0.6rem 0 0.4rem;" alt="${ex.name}">`;
+
+    html += `
+      <div class="set-row">
+        <input type="number" placeholder="Weight (lb)" id="w_${ex.id}">
+        <input type="number" placeholder="Reps" id="r_${ex.id}">
+        <button onclick="logSet('${ex.id}')">Log</button>
+      </div>
+      <div class="sets-log" id="sets_${ex.id}"></div>
+    `;
+
+    card.innerHTML = html;
+    container.appendChild(card);
+
+    // show already logged sets
+    ex.sets.forEach(s => {
+      document.getElementById(`sets_${ex.id}`).innerHTML +=
+        `<div>${s.weight} lb × ${s.reps}</div>`;
+    });
+  });
 }
 
-function startRest(){
- let time=restDefault;
- let el=document.getElementById('rest');
- let restInt=setInterval(()=>{
- time--;
- el.innerText=time;
- if(time<=0){clearInterval(restInt); el.innerText=restDefault;}
- },1000);
+function logSet(exId) {
+  const wEl = document.getElementById('w_'+exId);
+  const rEl = document.getElementById('r_'+exId);
+  const w = parseFloat(wEl.value);
+  const r = parseInt(rEl.value);
+
+  if (!w || !r || isNaN(w) || isNaN(r)) return alert("Enter valid weight & reps");
+
+  const ex = currentWorkout.find(e=>e.id===exId);
+  ex.sets.push({weight:w, reps:r});
+
+  document.getElementById('sets_'+exId).innerHTML +=
+    `<div>${w} lb × ${r}</div>`;
+
+  // rough calorie estimate
+  const est = Math.round( (bodyweightLb * 0.4536 * 6 * 0.008) * (r/15) );
+  calories += est;
+  updateCalories();
+
+  wEl.value = ''; rEl.value = '';
+
+  startRest(90); // default rest after logging set
 }
 
-function setRest(sec){restDefault=sec; document.getElementById('rest').innerText=sec;}
-
-function endWorkout(){
- clearInterval(timerInterval);
- let duration=document.getElementById('timer').innerText;
- let entry={date:new Date().toLocaleDateString(), duration:duration, calories:Math.round(calories)};
- let history=JSON.parse(localStorage.getItem('bengeHistory')||'[]');
- history.push(entry);
- localStorage.setItem('bengeHistory',JSON.stringify(history));
- loadHistory();
- alert('Workout Saved!');
+function updateCalories() {
+  document.getElementById('calories').textContent = Math.round(calories);
 }
 
-function loadHistory(){
- let history=JSON.parse(localStorage.getItem('bengeHistory')||'[]');
- let div=document.getElementById('history'); div.innerHTML='';
- history.slice().reverse().forEach(h=>{
- let el=document.createElement('div'); el.className='history-item';
- el.innerHTML=`<b>${h.date}</b><br>Duration: ${h.duration}<br>Calories: ${h.calories}`;
- div.appendChild(el);
- });
+// ────────────────────────────────────────────────
+let restTimer;
+function startRest(seconds) {
+  clearInterval(restTimer);
+  let time = seconds;
+  const disp = document.getElementById('rest');
+  disp.textContent = time;
+
+  restTimer = setInterval(() => {
+    time--;
+    disp.textContent = time;
+    if (time <= 0) {
+      clearInterval(restTimer);
+      disp.textContent = "Go!";
+      // optional: new Audio('https://www.soundjay.com/buttons/beep-07.mp3').play();
+    }
+  }, 1000);
 }
 
-function openVideo(url){if(url) window.open(url);}
+// ────────────────────────────────────────────────
+function endWorkout() {
+  clearInterval(timerInterval);
+  clearInterval(restTimer);
 
-loadHistory();
-</script>
-</body>
-</html>
+  const duration = document.getElementById('timer').textContent;
+  const entry = {
+    date: new Date().toLocaleString(),
+    duration,
+    calories: Math.round(calories),
+    exercises: currentWorkout.map(ex=>({
+      name: ex.name,
+      setsCount: ex
