@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Benge Fitness</title>
+<style>
+body{font-family:Arial;margin:20px;background:#111;color:#fff}
+button{padding:10px;margin:5px;border-radius:8px;border:none;background:#2e7dff;color:white}
+.card{background:#1c1c1c;padding:15px;border-radius:10px;margin-bottom:15px}
+input{padding:6px;border-radius:6px;border:none;margin:3px;width:70px}
+.timer{font-size:28px;margin-top:10px}
+</style>
+</head>
+<body>
+<h1>Benge Fitness</h1>
+
+<div class="card">
+<h2>Workout Timer</h2>
+<div id="timer" class="timer">00:00</div>
+<button onclick="startWorkout()">Start Workout</button>
+<button onclick="endWorkout()">End Workout</button>
+<p>Total Calories: <span id="calories">0</span></p>
+</div>
+
+<div class="card">
+<h2>Bench Press</h2>
+<table>
+<tr><th>Set</th><th>Weight</th><th>Reps</th><th></th></tr>
+<tr>
+<td>1</td>
+<td><input id="w1"></td>
+<td><input id="r1"></td>
+<td><button onclick="finishSet()">Finish</button></td>
+</tr>
+<tr>
+<td>2</td>
+<td><input id="w2"></td>
+<td><input id="r2"></td>
+<td><button onclick="finishSet()">Finish</button></td>
+</tr>
+<tr>
+<td>3</td>
+<td><input id="w3"></td>
+<td><input id="r3"></td>
+<td><button onclick="finishSet()">Finish</button></td>
+</tr>
+</table>
+</div>
+
+<div class="card">
+<h2>Rest Timer</h2>
+<div id="rest">120</div>
+<button onclick="setRest(60)">60s</button>
+<button onclick="setRest(90)">90s</button>
+<button onclick="setRest(120)">120s</button>
+<button onclick="setRest(180)">180s</button>
+</div>
+
+<script>
+let startTime;
+let timerInterval;
+let restDefault=120;
+let weight=230;
+let calories=0;
+
+function startWorkout(){
+startTime=Date.now();
+timerInterval=setInterval(updateTimer,1000);
+}
+
+function updateTimer(){
+let diff=Math.floor((Date.now()-startTime)/1000);
+let m=Math.floor(diff/60);
+let s=diff%60;
+document.getElementById("timer").innerText=
+(m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+}
+
+function endWorkout(){
+clearInterval(timerInterval);
+alert("Workout complete! Calories burned: "+Math.round(calories));
+}
+
+function finishSet(){
+let setCalories=(6*104*0.01);
+calories+=setCalories;
+document.getElementById("calories").innerText=Math.round(calories);
+startRest();
+}
+
+function startRest(){
+let time=restDefault;
+let restInt=setInterval(()=>{
+time--;
+document.getElementById("rest").innerText=time;
+if(time<=0) clearInterval(restInt);
+},1000);
+}
+
+function setRest(sec){
+restDefault=sec;
+document.getElementById("rest").innerText=sec;
+}
+</script>
+
+</body>
+</html>
