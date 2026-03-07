@@ -1,402 +1,257 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Benge Fitness Pro</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root {
-      --bg: #0a0a0a;
-      --card: #121212;
-      --accent: #0066ff;
-      --accent-dark: #004ccc;
-      --success: #28a745;
-      --danger: #ff4444;
-      --text: #e0e0e0;
-      --superset: #ff6b6b33;
-      --light-bg: #f8f9fa;
-      --light-card: #ffffff;
-      --light-text: #212529;
-    }
-    body.light {
-      --bg: var(--light-bg);
-      --card: var(--light-card);
-      --text: var(--light-text);
-    }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding-bottom: 60px;
-    }
-    header {
-      background: #111;
-      padding: 1rem;
-      font-size: 1.6rem;
-      font-weight: 700;
-      text-align: center;
-      border-bottom: 1px solid #222;
-    }
-    body.light header { background: #e9ecef; color: #212529; }
-    .container { max-width: 720px; margin: 0 auto; padding: 0.8rem; }
-    .tabs {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.5rem;
-      margin: 1rem 0;
-    }
-    .tab {
-      padding: 0.9rem;
-      background: #1e1e1e;
-      border-radius: 8px;
-      text-align: center;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    body.light .tab { background: #dee2e6; }
-    .tab.active { background: var(--accent); color: white; }
-    .card {
-      background: var(--card);
-      border-radius: 10px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border: 1px solid #222;
-    }
-    body.light .card { border: 1px solid #ced4da; }
-    button, select, input {
-      padding: 0.7rem 1rem;
-      border-radius: 6px;
-      border: none;
-      font-size: 0.95rem;
-    }
-    select, input { background: #1e1e1e; color: white; width: 100%; margin: 0.4rem 0; }
-    body.light select, body.light input { background: #f1f3f5; color: #212529; }
-    button { background: var(--accent); color: white; cursor: pointer; }
-    button:hover { background: var(--accent-dark); }
-    .success-btn { background: var(--success); }
-    .success-btn:hover { background: #218838; }
-    .danger-btn { background: var(--danger); font-size: 0.85rem; padding: 0.5rem 0.9rem; }
-    .exercise-container {
-      display: flex;
-      gap: 0.6rem;
-      margin-bottom: 0.6rem;
-      position: relative;
-    }
-    .muscle-visual {
-      width: 100px;
-      height: 100px;
-      background-size: cover;
-      background-position: center;
-      border-radius: 8px;
-      flex-shrink: 0;
-    }
-    .exercise-card {
-      flex: 1;
-      background: #181818;
-      border-radius: 8px;
-      padding: 0.8rem;
-      border: 1px solid #282828;
-      font-size: 0.95rem;
-    }
-    body.light .exercise-card { background: #f8f9fa; border: 1px solid #ced4da; }
-    .superset-group {
-      background: var(--superset);
-      border-left: 4px solid #ff4444;
-      padding: 0.6rem;
-      margin: 0.4rem 0;
-      border-radius: 6px;
-      position: relative;
-    }
-    .arrow-line-left {
-      position: absolute;
-      left: -18px;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: #ff6b6b;
-    }
-    .arrow-line-left::before,
-    .arrow-line-left::after {
-      content: '';
-      position: absolute;
-      left: 50%;
-      width: 0;
-      height: 0;
-      border-left: 8px solid #ff6b6b;
-      border-top: 6px solid transparent;
-      border-bottom: 6px solid transparent;
-      transform: translateX(-50%);
-    }
-    .arrow-line-left::before { top: 20px; }
-    .arrow-line-left::after { bottom: 20px; }
-    .timer-area { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
-    .main-timer { font-size: 3.2rem; font-weight: bold; letter-spacing: 2px; }
-    .stats-box { font-size: 1.05rem; text-align: right; line-height: 1.5; }
-    .rest-display { font-size: 2.8rem; text-align: center; margin: 0.8rem 0; font-weight: 600; color: #ff6b6b; }
-    .history-item { padding: 1rem 0; border-bottom: 1px solid #222; }
-    body.light .history-item { border-bottom: 1px solid #dee2e6; }
-    .hidden { display: none !important; }
-    .progress-chart { height: 300px; margin: 1rem 0; }
-    .reorder-btn { background: none; border: none; color: var(--text); font-size: 1.3rem; cursor: pointer; padding: 0 0.4rem; }
-    .body-diagram { display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin: 1.5rem 0; }
-    .body-diagram div { text-align: center; }
-    .body-diagram svg { width: 180px; height: 360px; }
-    .muscle { fill: #555; transition: fill 0.6s ease; }
-    body.light .muscle { fill: #bbb; }
-  </style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Benge Fitness Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{margin:0;font-family:'Roboto',sans-serif;background:#0d0d0d;color:#fff;}
+header{background:#1a1a1a;padding:18px;font-size:24px;font-weight:700;text-align:center;letter-spacing:1px;}
+.container{padding:12px}
+.tabs{display:flex;margin-bottom:12px;gap:6px}
+.tab{flex:1;padding:10px;background:#222;border-radius:8px;text-align:center;font-weight:700;cursor:pointer}
+.tab.active{background:#2e7dff;color:#fff}
+.card{background:#1c1c1c;padding:14px;border-radius:12px;margin-bottom:14px}
+.exercise-card{background:#262626;padding:12px;border-radius:12px;margin-bottom:12px}
+.exercise-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.set-row{display:flex;gap:6px;margin-bottom:6px}
+.set-row input{flex:1;padding:6px;border-radius:6px;border:none}
+.set-row button{padding:6px 10px;border-radius:6px;border:none;background:#2e7dff;color:#fff;font-weight:700}
+.video{color:#6ab0ff;text-decoration:underline;cursor:pointer;font-size:13px}
+img.exercise-img{width:100%;border-radius:8px;margin-top:6px}
+.timer{font-size:28px;margin:8px 0;text-align:center}
+.history-item{font-size:13px;border-bottom:1px solid #333;padding:8px 0}
+.add-exercise-btn{padding:10px;border:none;border-radius:8px;background:#2e7dff;color:#fff;font-weight:700;margin-top:6px;width:100%;cursor:pointer}
+.hidden{display:none}
+.body-diagram{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;margin-top:20px}
+.body-diagram svg{width:180px;height:360px}
+.muscle{fill:#28a745;transition:fill 0.5s}
+</style>
 </head>
 <body>
-
 <header>Benge Fitness Pro</header>
-
 <div class="container">
 
-  <div class="tabs">
-    <div class="tab active" onclick="showTab('workout')">Workout</div>
-    <div class="tab" onclick="showTab('history')">History</div>
-    <div class="tab" onclick="showTab('progress')">Progress</div>
-    <div class="tab" onclick="showTab('settings')">Settings</div>
-  </div>
+<div class="tabs">
+<div class="tab active" id="tabWorkout" onclick="switchTab('workout')">Workout</div>
+<div class="tab" id="tabHistory" onclick="switchTab('history')">History</div>
+<div class="tab" id="tabProgress" onclick="switchTab('progress')">Progress</div>
+</div>
 
-  <!-- WORKOUT TAB (unchanged from your last working version) -->
-  <div id="workoutTab">
-    <div class="card" id="startScreen">
-      <h3>Start New Workout</h3>
-      <select id="categorySelect">
-        <option value="Chest">Chest</option>
-        <option value="Back">Back</option>
-        <option value="Legs">Legs</option>
-        <option value="Cardio">Cardio</option>
-      </select>
-      <button class="success-btn" style="width:100%;margin-top:1rem;font-size:1.1rem;" onclick="startNewWorkout()">Begin</button>
-    </div>
+<div id="workoutTab">
+<div class="card">
+<h3>New Workout</h3>
+<select id="category">
+<option>Chest</option>
+<option>Back</option>
+<option>Legs</option>
+<option>Cardio</option>
+</select>
+<button class="add-exercise-btn" onclick="startWorkout()">Start Workout</button>
+</div>
 
-    <div id="activeWorkout" class="hidden">
-      <div class="card timer-area">
-        <div>
-          <div class="main-timer" id="workoutTimer">00:00</div>
-        </div>
-        <div class="stats-box">
-          Calories (est): <b id="calDisplay">0</b> kcal<br>
-          Volume: <b id="volDisplay">0</b> lb<br><br>
-          <button onclick="finishWorkout()" style="font-size:1.1rem;padding:0.8rem 1.8rem;">Finish & Save</button>
-        </div>
-      </div>
+<div id="activeWorkout" class="hidden">
+<div class="card">
+<div class="timer" id="timer">00:00</div>
+<div style="text-align:center;margin:6px 0">Calories Burned: <span id="calories">0</span></div>
+<button class="add-exercise-btn" onclick="endWorkout()">Finish Workout</button>
+</div>
 
-      <div id="exercisesContainer"></div>
+<div id="exerciseList"></div>
+<button class="add-exercise-btn" onclick="addExercise()">Add Exercise</button>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:1.2rem 0;">
-        <button class="success-btn" onclick="addExercisePrompt()">+ Add Exercise</button>
-        <button onclick="groupSuperset()">Group Superset</button>
-      </div>
+<div class="card">
+<h3>Rest Timer</h3>
+<div id="rest">120</div>
+<button onclick="setRest(60)">60s</button>
+<button onclick="setRest(90)">90s</button>
+<button onclick="setRest(120)">120s</button>
+<button onclick="setRest(180)">180s</button>
+</div>
+</div>
+</div>
 
-      <div class="card">
-        <h3>Rest Timer</h3>
-        <div class="rest-display" id="restTimer">—</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.6rem;">
-          <button onclick="startRest(60)">60s</button>
-          <button onclick="startRest(90)">90s</button>
-          <button onclick="startRest(120)">120s</button>
-          <button onclick="startRest(180)">180s</button>
-        </div>
-      </div>
-    </div>
-  </div>
+<div id="historyTab" class="hidden">
+<div class="card">
+<h3>Workout History</h3>
+<div id="history"></div>
+</div>
+</div>
 
-  <!-- HISTORY TAB (unchanged) -->
-  <div id="historyTab" class="hidden">
-    <div class="card">
-      <h3>Workout History</h3>
-      <button onclick="exportHistory()" style="margin-bottom:1rem;width:100%;">Export to CSV</button>
-      <div id="historyList"></div>
-    </div>
-  </div>
+<div id="progressTab" class="hidden">
+<div class="card">
+<h3>Muscle Recovery</h3>
+<div class="body-diagram">
 
-  <!-- PROGRESS TAB - Updated with better anatomical diagrams & recovery color -->
-  <div id="progressTab" class="hidden">
-    <div class="card">
-      <h3>Progress Tracking</h3>
-      <div style="margin:1.5rem 0;">
-        <h4>Total Volume (lb) Over Time</h4>
-        <canvas id="volumeChart" class="progress-chart"></canvas>
-      </div>
-      <div style="margin:1.5rem 0;">
-        <h4>Calories Burned Over Time</h4>
-        <canvas id="caloriesChart" class="progress-chart"></canvas>
-      </div>
-      <div style="margin:1.5rem 0;">
-        <h4>Workouts per Week</h4>
-        <canvas id="frequencyChart" class="progress-chart"></canvas>
-      </div>
+<div>
+<h4>Front</h4>
+<svg viewBox="0 0 200 400">
+<rect x="80" y="20" width="40" height="40" rx="20" fill="#aaa"/>
+<rect x="60" y="60" width="80" height="150" rx="20" fill="#aaa"/>
+<rect x="80" y="90" width="40" height="60" class="muscle" id="chest"/>
+<rect x="60" y="210" width="40" height="140" class="muscle" id="leftLeg"/>
+<rect x="100" y="210" width="40" height="140" class="muscle" id="rightLeg"/>
+<rect x="40" y="70" width="20" height="120" class="muscle" id="leftArm"/>
+<rect x="140" y="70" width="20" height="120" class="muscle" id="rightArm"/>
+</svg>
+</div>
 
-      <div class="body-diagram">
-        <div>
-          <h4>Front View</h4>
-          <svg viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
-            <!-- Head -->
-            <circle cx="100" cy="40" r="20" fill="#aaa" />
-            <!-- Neck -->
-            <rect x="90" y="60" width="20" height="20" fill="#aaa" />
-            <!-- Torso -->
-            <rect x="60" y="80" width="80" height="140" rx="20" fill="#aaa" />
-            <!-- Chest (Pectoralis major) -->
-            <path d="M70 90 Q100 70 130 90 Q140 120 130 140 Q100 160 70 140 Q60 120 70 90" class="muscle" id="chest-front" />
-            <!-- Abs -->
-            <rect x="80" y="160" width="40" height="60" rx="8" class="muscle" id="abs-front" />
-            <!-- Arms -->
-            <rect x="40" y="80" width="20" height="120" rx="10" class="muscle" id="left-arm-front" />
-            <rect x="140" y="80" width="20" height="120" rx="10" class="muscle" id="right-arm-front" />
-            <!-- Legs -->
-            <rect x="60" y="220" width="40" height="160" rx="10" class="muscle" id="left-leg-front" />
-            <rect x="100" y="220" width="40" height="160" rx="10" class="muscle" id="right-leg-front" />
-          </svg>
-        </div>
+<div>
+<h4>Back</h4>
+<svg viewBox="0 0 200 400">
+<rect x="80" y="20" width="40" height="40" rx="20" fill="#aaa"/>
+<rect x="60" y="60" width="80" height="150" rx="20" fill="#aaa"/>
+<rect x="80" y="90" width="40" height="120" class="muscle" id="back"/>
+</svg>
+</div>
 
-        <div>
-          <h4>Back View</h4>
-          <svg viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
-            <!-- Head -->
-            <circle cx="100" cy="40" r="20" fill="#aaa" />
-            <!-- Neck -->
-            <rect x="90" y="60" width="20" height="20" fill="#aaa" />
-            <!-- Torso -->
-            <rect x="60" y="80" width="80" height="140" rx="20" fill="#aaa" />
-            <!-- Upper Back (Trapezius + Rhomboids) -->
-            <path d="M70 90 Q100 70 130 90 Q150 110 140 140 Q100 160 60 140 Q50 110 70 90" class="muscle" id="upper-back" />
-            <!-- Lower Back (Latissimus dorsi) -->
-            <path d="M70 140 Q100 120 130 140 Q150 180 130 220 Q100 240 70 220 Q50 180 70 140" class="muscle" id="back-muscle" />
-            <!-- Arms -->
-            <rect x="40" y="80" width="20" height="120" rx="10" class="muscle" id="left-arm-back" />
-            <rect x="140" y="80" width="20" height="120" rx="10" class="muscle" id="right-arm-back" />
-            <!-- Legs -->
-            <rect x="60" y="220" width="40" height="160" rx="10" class="muscle" id="left-leg-back" />
-            <rect x="100" y="220" width="40" height="160" rx="10" class="muscle" id="right-leg-back" />
-          </svg>
-        </div>
-      </div>
-
-      <div id="freshnessLabels" style="margin-top:1rem; text-align:center; font-weight:bold;"></div>
-      <button onclick="refreshProgressCharts()" style="margin-top:1rem;width:100%;">Refresh Charts & Recovery</button>
-    </div>
-  </div>
-
-  <!-- SETTINGS TAB (unchanged) -->
-  <div id="settingsTab" class="hidden">
-    <div class="card">
-      <h3>Settings</h3>
-      <label>Bodyweight (lb):</label>
-      <input type="number" id="bodyweightInput" value="200">
-      <div style="margin:1rem 0;">
-        <label>Theme:</label>
-        <select id="themeSelect">
-          <option value="dark">Dark Mode</option>
-          <option value="light">Light Mode</option>
-        </select>
-      </div>
-      <button style="width:100%;margin:1rem 0;" onclick="saveSettings()">Save</button>
-      <button class="danger-btn" style="width:100%;" onclick="clearAllData()">Clear All History</button>
-    </div>
-  </div>
+</div>
+<button class="add-exercise-btn" onclick="updateMuscleRecovery()">Refresh Recovery</button>
+</div>
+</div>
 
 </div>
 
 <script>
-// ──────────────────────────────────────────────── DATA & INIT ────────────────────────────────────────────────
-let workoutStartTime, timerInterval, restInterval;
-let currentExercises = [];
-let caloriesBurned = 0;
-let totalVolume = 0;
-let bodyweight = parseInt(localStorage.getItem('benge_bw')) || 200;
-let history = JSON.parse(localStorage.getItem('benge_history') || '[]');
-let theme = localStorage.getItem('benge_theme') || 'dark';
+let startTime, timerInterval, restDefault=120, calories=0, bodyweight=230, workout=[];
+let muscleLastWorked = JSON.parse(localStorage.getItem('muscleLastWorked')||"{}");
 
-document.body.classList.toggle('light', theme === 'light');
-document.getElementById('bodyweightInput').value = bodyweight;
-document.getElementById('themeSelect').value = theme;
+const exerciseDB=[
+{name:"Bench Press",muscle:"chest",img:"https://upload.wikimedia.org/wikipedia/commons/3/3a/Pectoralis_major.png",vid:"https://www.youtube.com/watch?v=rT7DgCr-3pg"},
+{name:"Incline Bench",muscle:"chest",img:"https://upload.wikimedia.org/wikipedia/commons/3/3a/Pectoralis_major.png",vid:"https://www.youtube.com/watch?v=DbFgADa2PL8"},
+{name:"Lat Pulldown",muscle:"back",img:"https://upload.wikimedia.org/wikipedia/commons/1/1d/Musculi_dorsi.png",vid:"https://www.youtube.com/watch?v=CAwf7n6Luuc"},
+{name:"Cable Row",muscle:"back",img:"https://upload.wikimedia.org/wikipedia/commons/1/1d/Musculi_dorsi.png",vid:"https://www.youtube.com/watch?v=HJSVR_67OlM"},
+{name:"Back Squat",muscle:"legs",img:"https://upload.wikimedia.org/wikipedia/commons/6/6e/Quadriceps_femoris.png",vid:"https://www.youtube.com/watch?v=Dy28eq2PjcM"},
+{name:"Leg Press",muscle:"legs",img:"https://upload.wikimedia.org/wikipedia/commons/6/6e/Quadriceps_femoris.png",vid:"https://www.youtube.com/watch?v=IZxyjW7MPJQ"},
+{name:"Treadmill",muscle:"cardio",img:"https://upload.wikimedia.org/wikipedia/commons/4/4a/Heart_anatomy_en.png",vid:"https://www.youtube.com/watch?v=brFHyOtTwH4"}
+];
 
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-// ──────────────────────────────────────────────── CORE FUNCTIONS ────────────────────────────────────────────────
-function showTab(tab) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
-
-  document.getElementById('workoutTab').classList.toggle('hidden', tab !== 'workout');
-  document.getElementById('historyTab').classList.toggle('hidden', tab !== 'history');
-  document.getElementById('progressTab').classList.toggle('hidden', tab !== 'progress');
-  document.getElementById('settingsTab').classList.toggle('hidden', tab !== 'settings');
-
-  if (tab === 'history') loadHistory();
-  if (tab === 'progress') loadBodyDiagram();
+function switchTab(tab){
+ document.getElementById('workoutTab').classList.add('hidden');
+ document.getElementById('historyTab').classList.add('hidden');
+ document.getElementById('progressTab').classList.add('hidden');
+ document.getElementById('tabWorkout').classList.remove('active');
+ document.getElementById('tabHistory').classList.remove('active');
+ document.getElementById('tabProgress').classList.remove('active');
+ if(tab==='workout'){document.getElementById('workoutTab').classList.remove('hidden');document.getElementById('tabWorkout').classList.add('active');}
+ if(tab==='history'){document.getElementById('historyTab').classList.remove('hidden');document.getElementById('tabHistory').classList.add('active');loadHistory();}
+ if(tab==='progress'){document.getElementById('progressTab').classList.remove('hidden');document.getElementById('tabProgress').classList.add('active');updateMuscleRecovery();}
 }
 
-// ... (keep your existing startNewWorkout, addExercise, renderExercises, logSet, finishWorkout, etc.)
-
-function loadBodyDiagram() {
-  const labels = document.getElementById('freshnessLabels');
-  labels.innerHTML = '<h4>Muscle Recovery Status (Green = Fresh, Red = Strained)</h4>';
-
-  const muscleGroups = [
-    {id: 'chest-front', name: 'Chest', muscleKey: 'chest'},
-    {id: 'back-muscle', name: 'Back', muscleKey: 'back'},
-    {id: 'left-leg-front', name: 'Quadriceps / Front Legs', muscleKey: 'legs'},
-    {id: 'right-leg-front', name: 'Quadriceps / Front Legs', muscleKey: 'legs'},
-    {id: 'left-arm-front', name: 'Arms (Front)', muscleKey: 'arms'},
-    {id: 'right-arm-front', name: 'Arms (Front)', muscleKey: 'arms'}
-  ];
-
-  muscleGroups.forEach(({id, name, muscleKey}) => {
-    const {volume, daysSinceLast} = calculateMuscleStats(muscleKey);
-    // Recovery model: full green after 3 days (72 hours)
-    const recoveryHours = daysSinceLast * 24;
-    const maxRecoveryHours = 72;
-    const recoveryPercent = Math.min(100, (recoveryHours / maxRecoveryHours) * 100);
-    // Strain from volume (normalized)
-    const strain = Math.min(100, volume / 800); // adjust divisor based on typical workout volume
-    // Final freshness: recovery minus remaining strain
-    const freshness = Math.max(0, recoveryPercent - strain * (100 - recoveryPercent / 2));
-    const color = freshness > 66 ? '#28a745' : freshness > 33 ? '#ffcc00' : '#ff4444';
-
-    labels.innerHTML += `<p>${name}: <span style="color:${color};">${Math.round(freshness)}% fresh</span> (${daysSinceLast} days since last trained)</p>`;
-
-    const el = document.getElementById(id);
-    if (el) {
-      el.style.fill = color;
-      el.style.opacity = 0.7 + (1 - freshness / 100) * 0.3; // more strain = slightly more opaque
-    }
-  });
+function startWorkout(){
+ calories=0; workout=[];
+ startTime=Date.now();
+ timerInterval=setInterval(updateTimer,1000);
+ document.getElementById('activeWorkout').classList.remove('hidden');
+ document.getElementById('exerciseList').innerHTML='';
+ loadPreset();
 }
 
-function calculateMuscleStats(muscleKey) {
-  let volume = 0;
-  let lastDate = null;
-
-  history.forEach(w => {
-    w.exercises.forEach(ex => {
-      if (ex.muscle === muscleKey) {
-        ex.sets.forEach(s => volume += (s.weight || 0) * s.reps);
-        const d = new Date(w.date);
-        if (!lastDate || d > lastDate) lastDate = d;
-      }
-    });
-  });
-
-  const daysSinceLast = lastDate ? Math.floor((Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24)) : 999;
-
-  return {volume, daysSinceLast};
+function updateTimer(){
+ let diff=Math.floor((Date.now()-startTime)/1000);
+ let m=Math.floor(diff/60), s=diff%60;
+ document.getElementById('timer').innerText=(m<10?'0':'')+m+':' + (s<10?'0':'')+s;
 }
 
-// Keep your existing refreshProgressCharts, saveSettings, clearAllData, etc.
-function refreshProgressCharts() {
-  // ... your existing chart code ...
-  loadBodyDiagram(); // refresh colors when charts refresh
+function loadPreset(){
+ let cat=document.getElementById('category').value;
+ let list=[];
+ if(cat==='Chest') list=['Bench Press','Incline Bench'];
+ if(cat==='Back') list=['Lat Pulldown','Cable Row'];
+ if(cat==='Legs') list=['Back Squat','Leg Press'];
+ if(cat==='Cardio') list=['Treadmill'];
+ list.forEach(e=>createExercise(e));
 }
+
+function createExercise(name){
+ let data=exerciseDB.find(x=>x.name===name)||{name:name,img:'',vid:'',muscle:'other'};
+ let id='ex'+Date.now()+Math.random();
+ workout.push({name:data.name,sets:[],muscle:data.muscle});
+ let div=document.createElement('div');
+ div.className='exercise-card';
+ div.id=id;
+ div.innerHTML=`
+ <div class='exercise-header'><b>${data.name}</b><span class='video' onclick="openVideo('${data.vid}')">Watch Demo</span></div>
+ ${data.img?`<img class='exercise-img' src='${data.img}'>`:``}
+ <div class='set-row'><input placeholder='Weight' id='w${id}'><input placeholder='Reps' id='r${id}'><button onclick="finishSet('${id}')">Log Set</button></div>
+ <div id='sets${id}'></div>`;
+ document.getElementById('exerciseList').appendChild(div);
+}
+
+function addExercise(){
+ let name=prompt('Exercise Name');
+ if(name) createExercise(name);
+}
+
+function finishSet(id){
+ let w=document.getElementById('w'+id).value, r=document.getElementById('r'+id).value;
+ if(!w||!r) return;
+ let log=document.createElement('div');
+ log.innerText=w+' lb x '+r;
+ document.getElementById('sets'+id).appendChild(log);
+ let setCalories=(6*(bodyweight*0.4536)*0.008);
+ calories+=setCalories;
+ document.getElementById('calories').innerText=Math.round(calories);
+ startRest();
+}
+
+function startRest(){
+ let time=restDefault;
+ let el=document.getElementById('rest');
+ let restInt=setInterval(()=>{
+ time--;
+ el.innerText=time;
+ if(time<=0){clearInterval(restInt); el.innerText=restDefault;}
+ },1000);
+}
+
+function setRest(sec){restDefault=sec; document.getElementById('rest').innerText=sec;}
+
+function endWorkout(){
+ clearInterval(timerInterval);
+ let duration=document.getElementById('timer').innerText;
+ let entry={date:new Date().toLocaleDateString(), duration:duration, calories:Math.round(calories)};
+ let history=JSON.parse(localStorage.getItem('bengeHistory')||'[]');
+ history.push(entry);
+ localStorage.setItem('bengeHistory',JSON.stringify(history));
+
+ workout.forEach(ex=>{
+ muscleLastWorked[ex.muscle]=Date.now();
+ });
+ localStorage.setItem('muscleLastWorked',JSON.stringify(muscleLastWorked));
+
+ loadHistory();
+ alert('Workout Saved!');
+}
+
+function loadHistory(){
+ let history=JSON.parse(localStorage.getItem('bengeHistory')||'[]');
+ let div=document.getElementById('history'); div.innerHTML='';
+ history.slice().reverse().forEach(h=>{
+ let el=document.createElement('div'); el.className='history-item';
+ el.innerHTML=`<b>${h.date}</b><br>Duration: ${h.duration}<br>Calories: ${h.calories}`;
+ div.appendChild(el);
+ });
+}
+
+function updateMuscleRecovery(){
+ const muscles=['chest','back','legs','leftArm','rightArm','leftLeg','rightLeg'];
+ muscles.forEach(m=>{
+ let el=document.getElementById(m);
+ if(!el) return;
+ let last=muscleLastWorked[m]||0;
+ let days=(Date.now()-last)/(1000*60*60*24);
+ let recovery=Math.min(days/3,1);
+ let red=Math.round(255*(1-recovery));
+ let green=Math.round(255*recovery);
+ el.style.fill=`rgb(${red},${green},0)`;
+ });
+}
+
+function openVideo(url){if(url) window.open(url);} 
+
+loadHistory();
 </script>
 </body>
 </html>
