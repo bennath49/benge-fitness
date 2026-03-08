@@ -149,21 +149,6 @@
     body.light .muscle { fill: #aaa; }
     .muscle-sore { fill: red; }
     .muscle-fresh { fill: green; }
-  /* Realistic Muscle Diagram Styling */
-    .realistic-muscle-map svg path {
-      transition: fill 0.3s ease;
-      stroke: none; /* remove original outline */
-    }
-
-    /* Green for Fresh */
-    .realistic-muscle-map .muscle-fresh path {
-      fill: #28a745 !important;
-    }
-
-    /* Red for Fatigued */
-    .realistic-muscle-map .muscle-sore path {
-      fill: #ff4444 !important;
-    }
   </style>
 </head>
 <body>
@@ -249,6 +234,37 @@
         <h4>Workouts per Week</h4>
         <canvas id="frequencyChart" class="progress-chart"></canvas>
       </div>
+      <div class="body-diagram">
+        <div>
+          <h4>Front View</h4>
+          <svg viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
+            <rect x="80" y="20" width="40" height="40" rx="20" fill="#aaa" /> <!-- Head -->
+            <rect x="60" y="60" width="80" height="150" rx="20" fill="#aaa" /> <!-- Torso -->
+            <rect x="40" y="60" width="20" height="100" rx="10" class="muscle" id="left-arm-front" /> <!-- Left Arm -->
+            <rect x="140" y="60" width="20" height="100" rx="10" class="muscle" id="right-arm-front" /> <!-- Right Arm -->
+            <rect x="60" y="210" width="40" height="150" rx="10" class="muscle" id="left-leg-front" /> <!-- Left Leg -->
+            <rect x="100" y="210" width="40" height="150" rx="10" class="muscle" id="right-leg-front" /> <!-- Right Leg -->
+            <rect x="80" y="80" width="40" height="80" rx="10" class="muscle" id="chest-front" /> <!-- Chest -->
+            <rect x="80" y="160" width="40" height="50" rx="10" class="muscle" id="abs-front" /> <!-- Abs -->
+          </svg>
+        </div>
+        <div>
+          <h4>Back View</h4>
+          <svg viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
+            <rect x="80" y="20" width="40" height="40" rx="20" fill="#aaa" /> <!-- Head -->
+            <rect x="60" y="60" width="80" height="150" rx="20" fill="#aaa" /> <!-- Torso -->
+            <rect x="40" y="60" width="20" height="100" rx="10" class="muscle" id="left-arm-back" /> <!-- Left Arm -->
+            <rect x="140" y="60" width="20" height="100" rx="10" class="muscle" id="right-arm-back" /> <!-- Right Arm -->
+            <rect x="60" y="210" width="40" height="150" rx="10" class="muscle" id="left-leg-back" /> <!-- Left Leg -->
+            <rect x="100" y="210" width="40" height="150" rx="10" class="muscle" id="right-leg-back" /> <!-- Right Leg -->
+            <rect x="80" y="80" width="40" height="130" rx="10" class="muscle" id="back-muscle" /> <!-- Back -->
+          </svg>
+        </div>
+      </div>
+      <div id="freshnessLabels" style="margin-top:1rem;"></div>
+      <button onclick="refreshProgressCharts()" style="margin-top:1rem;">Refresh Charts</button>
+    </div>
+  </div>
 
   <!-- SETTINGS TAB -->
   <div id="settingsTab" class="hidden">
@@ -773,193 +789,28 @@ function exportHistory() {
 }
 
 function loadBodyDiagram() {
-  const container = document.getElementById('progressTab').querySelector('.card');
-  const existingDiagrams = container.querySelectorAll('.realistic-muscle-map');
-  
-  // Clear any existing complex diagrams
-  existingDiagrams.forEach(d => d.remove());
-  
-  // Add freshness labels container if it doesn't exist
-  if (!document.getElementById('freshnessLabels')) {
-    const labelDiv = document.createElement('div');
-    labelDiv.id = 'freshnessLabels';
-    labelDiv.style.marginTop = '1rem';
-    container.appendChild(labelDiv);
-  } else {
-    document.getElementById('freshnessLabels').innerHTML = '';
-  }
+  const labels = document.getElementById('freshnessLabels');
+  labels.innerHTML = '';
 
-  // Define the detailed muscle maps (Realistic SVGs)
-  const views = {
-    front: createRealisticFrontSVG(),
-    back: createRealisticBackSVG()
-  };
+  const muscleGroups = ['chest', 'back', 'legs', 'arms', 'shoulders', 'cardio'];
 
-  // Process and display each map
-  Object.keys(views).forEach(viewName => {
-    const viewTitle = viewName.charAt(0).toUpperCase() + viewName.slice(1);
-    const diagramDiv = document.createElement('div');
-    diagramDiv.className = `realistic-muscle-map realistic-${viewName}-view`;
-    diagramDiv.innerHTML = `<h4>${viewTitle} View (Muscle Diagram)</h4>${views[viewName]}`;
-    
-    container.insertBefore(diagramDiv, document.getElementById('freshnessLabels'));
-    
-    // Apply freshness coloring based on muscle group stats
-    Object.keys(EXERCISES).forEach(cat => {
-      // Muscle category IDs in SVG match category names in EXERCISES (case-sensitive)
-      applyMuscleFreshnessToSVG(viewName, cat); 
+  muscleGroups.forEach(m => {
+    const {volume, daysSinceLast} = calculateMuscleStats(m);
+    // More accurate freshness: base soreness on volume, recover exponentially over days
+    const soreness = Math.min(100, volume / 100 * Math.exp(-daysSinceLast / 2)); // recover half every 2 days
+    const freshness = 100 - soreness;
+    labels.innerHTML += `<p>${m.charAt(0).toUpperCase() + m.slice(1)}: ${Math.round(freshness)}% fresh</p>`;
+
+    const elFront = document.getElementById(m + '-front');
+    const elBack = document.getElementById(m + '-back');
+    [elFront, elBack].forEach(el => {
+      if (el) {
+        el.classList.toggle('muscle-fresh', freshness > 50);
+        el.classList.toggle('muscle-sore', freshness <= 50);
+        el.style.opacity = (100 - freshness) / 100; // sore = higher opacity red
+      }
     });
   });
-}
-
-// Complex SVG String for Realistic Front View
-function createRealisticFrontSVG() {
-  return `
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-         x="0px" y="0px" viewBox="0 0 1000 1000" style="enable-background:new 0 0 1000 1000;" xml:space="preserve">
-      
-      <style type="text/css">
-        .muscle-base{fill:#333333;stroke:#000000;stroke-width:1;}
-        .complex-muscle path{transition:fill 0.3s ease;}
-      </style>
-
-      <path class="muscle-base" d="M499.7,7.2... "/> 
-
-      <g id="Chest_group" class="complex-muscle">
-          <path fill="#333333" d="M371,208..."/> 
-          <path fill="#333333" d="M629,208..."/> 
-      </g>
-
-      <g id="Abdominals_group" class="complex-muscle">
-          <path fill="#333333" d="M441,316..."/>
-      </g>
-
-      <g id="Biceps_group" class="complex-muscle">
-          <path fill="#333333" d="M259,252..."/>
-          <path fill="#333333" d="M741,252..."/>
-      </g>
-      
-      <g id="Trapezius_group_front" class="complex-muscle">
-          <path fill="#333333" d="M428,143..."/>
-          <path fill="#333333" d="M572,143..."/>
-      </g>
-      
-      <g id="Deltoids_group_front" class="complex-muscle">
-          <path fill="#333333" d="M333,160..."/>
-          <path fill="#333333" d="M667,160..."/>
-      </g>
-      
-      <g id="Brachioradialis_group" class="complex-muscle">
-          <path fill="#333333" d="M228,322..."/>
-          <path fill="#333333" d="M772,322..."/>
-      </g>
-      
-      <g id="Adductors_Sartorius_group" class="complex-muscle">
-          <path fill="#333333" d="M366,428..."/>
-          <path fill="#333333" d="M634,428..."/>
-      </g>
-      
-      <g id="Quadriceps_group" class="complex-muscle">
-          <path fill="#333333" d="M352,504..."/>
-          <path fill="#333333" d="M648,504..."/>
-      </g>
-      
-      <g id="Tibialis_anterior_group" class="complex-muscle">
-          <path fill="#333333" d="M351,699..."/>
-          <path fill="#333333" d="M649,699..."/>
-      </g>
-
-    </svg>
-  `;
-}
-
-// Complex SVG String for Realistic Back View
-function createRealisticBackSVG() {
-  return `
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-         x="0px" y="0px" viewBox="0 0 1000 1000" style="enable-background:new 0 0 1000 1000;" xml:space="preserve">
-      
-      <style type="text/css">
-        .muscle-base{fill:#333333;stroke:#000000;stroke-width:1;}
-        .complex-muscle path{transition:fill 0.3s ease;}
-      </style>
-
-      <path class="muscle-base" d="M499.7,7.2... "/> 
-
-      <g id="Trapezius_group_back" class="complex-muscle">
-          <path fill="#333333" d="M410,140..."/>
-          <path fill="#333333" d="M590,140..."/>
-      </g>
-      
-      <g id="Deltoids_group_back" class="complex-muscle">
-          <path fill="#333333" d="M331,162..."/>
-          <path fill="#333333" d="M669,162..."/>
-      </g>
-      
-      <g id="Latissimus_dorsi_group" class="complex-muscle">
-          <path fill="#333333" d="M373,235..."/>
-          <path fill="#333333" d="M627,235..."/>
-      </g>
-      
-      <g id="Triceps_group" class="complex-muscle">
-          <path fill="#333333" d="M260,250..."/>
-          <path fill="#333333" d="M740,250..."/>
-      </g>
-      
-      <g id="Serratus_anterior_front_External_oblique_back_group" class="complex-muscle">
-          <path fill="#333333" d="M413,313..."/>
-          <path fill="#333333" d="M587,313..."/>
-      </g>
-      
-      <g id="Hamstrings_group" class="complex-muscle">
-          <path fill="#333333" d="M350,505..."/>
-          <path fill="#333333" d="M650,505..."/>
-      </g>
-      
-      <g id="Gastrocnemius_group" class="complex-muscle">
-          <path fill="#333333" d="M352,701..."/>
-          <path fill="#333333" d="M648,701..."/>
-      </g>
-      
-      <g id="Gluteus_medius_maximus_group" class="complex-muscle">
-          <path fill="#333333" d="M371,425..."/>
-          <path fill="#333333" d="M629,425..."/>
-          <path fill="#333333" d="M380,410..."/>
-          <path fill="#333333" d="M620,410..."/>
-      </g>
-
-    </svg>
-  `;
-}
-
-// Logic to apply color based on muscle group and view
-function applyMuscleFreshnessToSVG(viewName, muscleCat) {
-  // Convert category name to match SVG group IDs (Chest -> Chest_group)
-  const groupID = `${muscleCat}_group`;
-  const viewSVG = document.querySelector(`.realistic-${viewName}-view svg`);
-  
-  if (!viewSVG) return;
-  const muscleGroup = viewSVG.getElementById(groupID);
-  
-  if (!muscleGroup) return;
-
-  // Calculate freshness based on category stats
-  const { volume, daysSinceLast } = calculateMuscleStats(muscleCat.toLowerCase());
-  
-  // More accurate freshness: base soreness on volume, recover exponentially over days
-  const soreness = Math.min(100, volume / 100 * Math.exp(-daysSinceLast / 2)); // recover half every 2 days
-  const freshness = 100 - soreness;
-  
-  // Apply classes based on freshness threshold
-  muscleGroup.classList.toggle('muscle-fresh', freshness > 50);
-  muscleGroup.classList.toggle('muscle-sore', freshness <= 50);
-  
-  // Optional: Set opacity based on recovery percentage (50% = base grey, 100% = full color)
-  muscleGroup.style.opacity = Math.max(0.5, freshness / 100); 
-  
-  // Add percentage label to freshness list
-  const labels = document.getElementById('freshnessLabels');
-  labels.innerHTML += `<p>${muscleCat}: ${Math.round(freshness)}% fresh</p>`;
 }
 
 function calculateMuscleStats(muscle) {
