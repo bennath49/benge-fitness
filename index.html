@@ -469,63 +469,44 @@ function renderExercises(withChecks = false) {
   const container = document.getElementById('exercisesContainer');
   container.innerHTML = '';
 
-  let currentGroup = null;
+  let i = 0;
+  while (i < currentExercises.length) {
+    const ex = currentExercises[i];
+    
+    // Check if this exercise starts or is part of a superset group
+    if (ex.supersetGroup !== null) {
+      const groupId = ex.supersetGroup;
+      const groupContainer = document.createElement('div');
+      groupContainer.className = 'superset-group';
+      
+      // Label for the superset group
+      groupContainer.innerHTML = `<div style="color:#ff6b6b; font-size:0.7rem; font-weight:bold; margin-bottom:10px; text-transform:uppercase;">Superset</div>`;
 
-  currentExercises.forEach((ex, i) => {
-    if (ex.supersetGroup !== currentGroup) {
-      if (currentGroup !== null) container.innerHTML += '</div>';
-      if (ex.supersetGroup !== null) {
-        container.innerHTML += '<div class="superset-group">';
-        currentGroup = ex.supersetGroup;
-      } else {
-        currentGroup = null;
+      // Group all exercises with the same ID together
+      while (i < currentExercises.length && currentExercises[i].supersetGroup === groupId) {
+        groupContainer.appendChild(createExerciseHTML(currentExercises[i], i, withChecks));
+        
+        // Add the red connector arrow if another exercise follows in this same group
+        if (i + 1 < currentExercises.length && currentExercises[i+1].supersetGroup === groupId) {
+          const arrow = document.createElement('div');
+          arrow.className = 'arrow-line';
+          groupContainer.appendChild(arrow);
+        }
+        i++;
       }
+      container.appendChild(groupContainer);
+    } else {
+      // Normal exercise - render it standard
+      container.appendChild(createExerciseHTML(ex, i, withChecks));
+      i++;
     }
+  }
 
-    let card = document.createElement('div');
-    card.className = 'exercise-container';
-    card.innerHTML = `
-      <div class="muscle-visual">${ex.muscle.toUpperCase()}</div>
-      <div class="exercise-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem;">
-          <strong>${ex.name}</strong>
-          <div>
-            <button class="reorder-btn" onclick="moveExercise(${i},-1)">↑</button>
-            <button class="reorder-btn" onclick="moveExercise(${i},1)">↓</button>
-          </div>
-        </div>
-        <div class="set-row">
-          <input type="number" placeholder="Weight" id="w_${i}">
-          <input type="number" placeholder="Reps" id="r_${i}">
-          <button onclick="logSet(${i})">Log</button>
-          <span id="rest_${i}" class="rest-display" style="display:none;color:#ff6b6b;">—</span>
-        </div>
-        <div id="sets_${i}"></div>
-        <div style="margin-top:1rem;display:flex;gap:0.8rem;">
-          <button class="danger-btn" onclick="removeExercise(${i})">Remove</button>
-          <button onclick="showReplaceOptions(${i})">Replace</button>
-          ${withChecks ? `<input type="checkbox" class="select-check" data-idx="${i}"> Select` : ''}
-        </div>
-      </div>
-    `;
-    container.appendChild(card);
-
-    ex.sets.forEach((s, si) => {
-      let setDiv = document.createElement('div');
-      setDiv.innerHTML = `${s.weight || 'BW'} × ${s.reps} <button class="danger-btn" onclick="removeSet(${i},${si})">×</button>`;
-      document.getElementById(`sets_${i}`).appendChild(setDiv);
-    });
-
-    if (ex.supersetGroup && i < currentExercises.length - 1 && currentExercises[i+1].supersetGroup === ex.supersetGroup) {
-      container.innerHTML += '<div class="arrow-line"></div>';
-    }
-  });
-
-  if (currentGroup !== null) container.innerHTML += '</div>';
-
+  // Handle the confirmation button if we are in "Grouping Mode"
   if (withChecks) {
     const btn = document.createElement('button');
-    btn.textContent = 'Group Selected as Superset';
+    btn.textContent = 'Link Selected as Superset';
+    btn.style.cssText = "width:100%; margin-top:1rem; background:var(--success);";
     btn.onclick = () => {
       const selected = [];
       document.querySelectorAll('.select-check:checked').forEach(check => selected.push(parseInt(check.dataset.idx)));
@@ -538,6 +519,44 @@ function renderExercises(withChecks = false) {
   }
 }
 
+// Helper function to create the actual exercise card HTML
+function createExerciseHTML(ex, i, withChecks) {
+  const card = document.createElement('div');
+  card.className = 'exercise-container';
+  card.innerHTML = `
+    <div class="muscle-visual">${ex.muscle.toUpperCase()}</div>
+    <div class="exercise-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem;">
+        <strong>${ex.name}</strong>
+        <div>
+          <button class="reorder-btn" onclick="moveExercise(${i},-1)">↑</button>
+          <button class="reorder-btn" onclick="moveExercise(${i},1)">↓</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <input type="number" placeholder="Weight" id="w_${i}">
+        <input type="number" placeholder="Reps" id="r_${i}">
+        <button onclick="logSet(${i})">Log</button>
+      </div>
+      <div id="sets_${i}" class="sets-log"></div>
+      <div style="margin-top:1rem;display:flex;gap:0.8rem;">
+        <button class="danger-btn" onclick="removeExercise(${i})">Remove</button>
+        <button onclick="showReplaceOptions(${i})">Replace</button>
+        ${withChecks ? `<label style="font-size:0.8rem;"><input type="checkbox" class="select-check" data-idx="${i}"> Select</label>` : ''}
+      </div>
+    </div>
+  `;
+
+  // Restore logged sets
+  const setsDiv = card.querySelector(`#sets_${i}`);
+  ex.sets.forEach((s, si) => {
+    const item = document.createElement('div');
+    item.innerHTML = `Set ${si+1}: ${s.weight || 'BW'} × ${s.reps} <button class="danger-btn" onclick="removeSet(${i},${si})">×</button>`;
+    setsDiv.appendChild(item);
+  });
+  return card;
+}
+  
 function logSet(idx) {
   const w = parseFloat(document.getElementById(`w_${idx}`).value) || 0;
   const r = parseInt(document.getElementById(`r_${idx}`).value);
